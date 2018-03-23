@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sessionmapper">
+	
+	<!--1.插入session  -->
+	<insert id="insertsession" parameterType="com.hnii.scweb.system.session.bean.SessionBean">
+		INSERT INTO S_SESSION(SYSTEMID,USERID,SESSIONTYPE,UCIP,ZHQDSJ,SESSIONVALUE) VALUES(#{systemid},#{userid},#{sessiontype},#{ucip},SYSDATE,#{sessionvalue}) 
+	</insert>
+	
+	<!--2.根据会话编号、会话方式与用户编号，查询是否有有效的会话,目前是3个小时失效,前端1个小时签到一次 -->
+	<select id="selectExistSession" parameterType="com.hnii.scweb.system.session.bean.SessionBean" resultType="java.lang.Integer">
+		SELECT COUNT(SYSTEMID) FROM S_SESSION S WHERE S.DELETEFLAG = '0' AND S.SESSIONTYPE = #{sessiontype} AND S.USERID = #{userid} AND S.ZHQDSJ > SYSDATE - 3/24 AND S.SYSTEMID = #{systemid}
+	</select>
+	<!--2.1.根据会话编号、IP、会话方式与用户编号，查询是否有有效的会话,目前是3个小时失效,前端1个小时签到一次 -->
+	<select id="selectExistSessionip" parameterType="com.hnii.scweb.system.session.bean.SessionBean" resultType="java.lang.Integer">
+		SELECT COUNT(SYSTEMID) FROM S_SESSION S WHERE S.DELETEFLAG = '0' AND S.UCIP = #{ucip} AND S.SESSIONTYPE = #{sessiontype} AND S.USERID = #{userid} AND S.ZHQDSJ > SYSDATE - 3/24 AND S.SYSTEMID = #{systemid}
+	</select>
+	
+	<!--3.根据会话编号、会话方式与用户编号，查询会话存储值  -->
+	<select id="selectsessionvalue" parameterType="com.hnii.scweb.system.session.bean.SessionBean" resultType="java.lang.String">
+		SELECT S.SESSIONVALUE FROM S_SESSION S WHERE S.DELETEFLAG = '0' AND S.SESSIONTYPE = #{sessiontype} AND S.USERID = #{userid} AND S.ZHQDSJ > SYSDATE - 3/24 AND S.SYSTEMID = #{systemid}
+	</select>
+	
+	<!--4.根据会话编号、会话方式与用户编号，存储会话值  -->
+	<update id="updatesessionvalue" parameterType="com.hnii.scweb.system.session.bean.SessionBean">
+		UPDATE S_SESSION S SET S.SESSIONVALUE = #{sessionvalue} WHERE S.DELETEFLAG = '0' AND S.SESSIONTYPE = #{sessiontype} AND S.USERID = #{userid} AND S.ZHQDSJ > SYSDATE - 3/24 AND S.SYSTEMID = #{systemid}
+	</update>
+	
+	<!--5.根据会话编号签到  -->
+	<update id="updateqd">
+		UPDATE S_SESSION S SET S.ZHQDSJ = SYSDATE WHERE S.SYSTEMID = #{systemid}
+	</update>
+</mapper>
